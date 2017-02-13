@@ -32,7 +32,6 @@ import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.ubudu.gmaps.factory.MarkerOptionsFactory;
 import com.ubudu.gmaps.factory.MarkerOptionsStrategyFactory;
-import com.ubudu.gmaps.factory.ZoneOptionsStrategyFactory;
 import com.ubudu.gmaps.model.Zone;
 import com.ubudu.gmaps.util.CachingUrlTileProvider;
 import com.ubudu.gmaps.util.MarkerOptionsStrategy;
@@ -41,7 +40,6 @@ import com.ubudu.gmaps.util.MathUtils;
 import com.ubudu.gmaps.util.Mercator;
 import com.ubudu.gmaps.util.ZoneLabelOptions;
 import com.ubudu.gmaps.util.ZoneOptions;
-import com.ubudu.gmaps.util.ZoneOptionsStrategy;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,7 +60,7 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
     // CONSTANTS:
 
     private final static long ANIMATE_LOCATION_CHANGE_DURATION = 500; // ms
-    private final static int DEFAULT_MAP_ZOOM = 17;
+    private final static int DEFAULT_MAP_ZOOM = 19;
     private final static int TILES_OVERLAY_Z_INDEX = 1;
     public final static int ZONE_Z_INDEX = 2;
     private final static String TITLE_LOCATION_MARKER = "Current location";
@@ -72,7 +70,6 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
 
     private MarkerOptionsStrategy locationMarkerOptionsStrategy;
     private MarkerOptionsStrategy markerOptionsStrategy;
-    private ZoneOptionsStrategy zoneOptionsStrategy;
     private Context mContext;
     private GoogleMap mGoogleMap;
     private Marker mLocationMarker;
@@ -85,7 +82,7 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
     private ConcurrentHashMap<com.ubudu.gmaps.model.Marker,Marker> customMarkersMap;
     private TileOverlayOptions mTileOverlayOptions;
     private EventListener eventListener;
-    private boolean customMarkersInforWindowEnabled = true;
+//    private boolean customMarkersInforWindowEnabled = true;
 
     // ---------------------------------------------------------------------------------------------
     // CONSTRUCTORS:
@@ -124,6 +121,8 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
                 Log.i(TAG,"Google Map instance ready.");
                 mGoogleMap = googleMap;
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                //Disable Map Toolbar:
+                mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
                 mGoogleMap.setBuildingsEnabled(false);
                 mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 mGoogleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
@@ -267,7 +266,6 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      */
     public void addZone(String name, List<LatLng> coords) {
         Zone zone = new Zone(name, coords);
-        zone.setOptionsStrategy(ZoneOptionsStrategyFactory.defaultZoneOptionsStrategy());
         addZone(zone);
     }
 
@@ -406,7 +404,11 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
         markerOptions.position(marker.getLocation());
         markerOptions.title(marker.getTitle());
         Marker customMarker = addMarkerToGoogleMap(markerOptions);
-        customMarkersMap.put(marker,customMarker);
+        try{
+            customMarkersMap.put(marker,customMarker);
+        } catch (NullPointerException ignored) {
+
+        }
     }
 
     /**
@@ -553,7 +555,7 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
         Iterator<Marker> iter = markersMatchingTag.iterator();
         while (iter.hasNext()) {
             Marker marker = iter.next();
-            if (!marker.getTitle().equals(searchPattern.getTitle()))
+            if (!marker.getTitle().contains(searchPattern.getTitle()))
                 iter.remove();
         }
 
@@ -586,14 +588,6 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      */
     public void setMarkerOptionsStrategy(MarkerOptionsStrategy markerOptionsStrategy) {
         this.markerOptionsStrategy = markerOptionsStrategy;
-    }
-
-    /**
-     *
-     * @param zoneOptionsStrategy strategy to be used for zones appearance
-     */
-    public void setZoneOptionsStrategy(ZoneOptionsStrategy zoneOptionsStrategy){
-        this.zoneOptionsStrategy = zoneOptionsStrategy;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -713,7 +707,9 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * @return reference to the added Marker
      */
     private Marker addMarkerToGoogleMap(MarkerOptions markerOptions) {
-        return mGoogleMap.addMarker(markerOptions);
+        if(mGoogleMap!=null)
+            return mGoogleMap.addMarker(markerOptions);
+        else return null;
     }
 
     /**
@@ -774,16 +770,6 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
         if(markerOptionsStrategy ==null)
             markerOptionsStrategy = MarkerOptionsStrategyFactory.defaultMarkerOptionsStrategy();
         return markerOptionsStrategy;
-    }
-
-    /**
-     *
-     * @return strategy for general zone appearance set for the map layout
-     */
-    private ZoneOptionsStrategy getZoneOptionsStrategy(){
-        if(zoneOptionsStrategy==null)
-            zoneOptionsStrategy = ZoneOptionsStrategyFactory.defaultZoneOptionsStrategy();
-        return zoneOptionsStrategy;
     }
 
     /**
@@ -908,10 +894,10 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
                     refreshMarker(myMarker);
                     if (eventListener != null)
                         eventListener.onMarkerClicked(myMarker, marker);
-                    break;
+                    return !myMarker.getMarkerOptionsStrategy().isInforWindowEnabled();
                 }
             }
-        return !customMarkersInforWindowEnabled;
+        return false;
     }
 
     public interface EventListener {
