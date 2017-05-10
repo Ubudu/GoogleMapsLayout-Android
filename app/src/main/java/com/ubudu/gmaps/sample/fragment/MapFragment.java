@@ -62,13 +62,6 @@ public class MapFragment extends BaseFragment implements MapLayout.EventListener
     @Override
     public void onMapReady() {
 
-        // customize general map's zone appearance options
-        mMapLayout.setZoneOptionsStrategy(new ZoneOptionsStrategy()
-                .normalZoneOptions(new ZoneOptions()
-                        .zoneLabelOptions(new ZoneLabelOptions()
-                                .labelColor(Color.YELLOW)))
-                .highlightedZoneOptions(ZoneOptionsFactory.defaultHighlightedZoneOptions()));
-
         // zones example
         ArrayList<LatLng> sampleZoneCoordinatesList = new ArrayList<>();
         sampleZoneCoordinatesList.add(new LatLng(52.200766, 21.024592));
@@ -84,13 +77,19 @@ public class MapFragment extends BaseFragment implements MapLayout.EventListener
         sampleZoneCoordinatesList.add(new LatLng(52.200702, 21.026725));
         sampleZoneCoordinatesList.add(new LatLng(52.201248, 21.026210));
         Zone zone = new Zone("sample zone 2",sampleZoneCoordinatesList);
+        zone.setOptionsStrategy(new ZoneOptionsStrategy()
+                .normalZoneOptions(new ZoneOptions()
+                        .zoneLabelOptions(new ZoneLabelOptions()
+                                .labelColor(Color.YELLOW)))
+                .highlightedZoneOptions(ZoneOptionsFactory.defaultHighlightedZoneOptions()));
         // normal and highlighted zone's object specific options will be used for appearance
         mMapLayout.addZone(zone);
 
         // setup custom markers default options
         mMapLayout.setMarkerOptionsStrategy(new MarkerOptionsStrategy()
                 .setNormalMarkerOptions(MarkerOptionsFactory
-                        .bitmapMarkerOptions(BitmapFactory.decodeResource(getResources(), R.drawable.location))));
+                        .bitmapMarkerOptions(BitmapFactory.decodeResource(getResources(), R.drawable.location)))
+                .setInforWindowEnabled(false));
 
         // sample custom marker 1
         mMapLayout.addMarker("test_markers", new LatLng(52.200937, 21.024743)
