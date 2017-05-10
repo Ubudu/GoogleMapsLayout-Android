@@ -59,7 +59,7 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
     // ---------------------------------------------------------------------------------------------
     // CONSTANTS:
 
-    private final static long ANIMATE_LOCATION_CHANGE_DURATION = 500; // ms
+    private final static long ANIMATE_LOCATION_CHANGE_DURATION = 400; // ms
     private final static int DEFAULT_MAP_ZOOM = 19;
     private final static int TILES_OVERLAY_Z_INDEX = 1;
     public final static int ZONE_Z_INDEX = 2;
@@ -82,7 +82,6 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
     private ConcurrentHashMap<com.ubudu.gmaps.model.Marker,Marker> customMarkersMap;
     private TileOverlayOptions mTileOverlayOptions;
     private EventListener eventListener;
-//    private boolean customMarkersInforWindowEnabled = true;
 
     // ---------------------------------------------------------------------------------------------
     // CONSTRUCTORS:
@@ -109,7 +108,7 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      */
     public void init(Context context) {
         mContext = context;
-        inflate(mContext, R.layout.layout_map, this);
+        inflate(mContext, R.layout.ubudu_layout_map, this);
 
         MapView mMapView = (MapView) findViewById(R.id.googlemapview);
         mMapView.onCreate(null);
@@ -391,24 +390,23 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * Adds a marker to the map
      *
      * @param marker marker to be added
+     *
+     * @return true if marker has been successfully added, false otherwise
      */
-    public void addMarker(com.ubudu.gmaps.model.Marker marker){
+    public boolean addMarker(com.ubudu.gmaps.model.Marker marker){
         if(marker.getLocation()==null)
-            return;
+            return false;
         if(customMarkersMap ==null)
             customMarkersMap = new ConcurrentHashMap<>();
         if(marker.getTitle()==null)
             marker.setTitle("");
-
         MarkerOptions markerOptions = marker.getMarkerOptionsStrategy().getNormalMarkerOptions();
         markerOptions.position(marker.getLocation());
         markerOptions.title(marker.getTitle());
         Marker customMarker = addMarkerToGoogleMap(markerOptions);
-        try{
+        if(customMarker!=null)
             customMarkersMap.put(marker,customMarker);
-        } catch (NullPointerException ignored) {
-
-        }
+        return true;
     }
 
     /**
@@ -417,9 +415,10 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * @param tags marker tags
      * @param coordinates marker location
      * @param title marker title
+     * @return true if marker has been successfully added, false otherwise
      */
-    public void addMarker(List<String> tags, LatLng coordinates, String title){
-        addMarker(tags,coordinates,title, getMarkerOptionsStrategy());
+    public boolean addMarker(List<String> tags, LatLng coordinates, String title){
+        return addMarker(tags,coordinates,title, getMarkerOptionsStrategy());
     }
 
     /**
@@ -429,10 +428,10 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * @param coordinates marker location
      * @param title marker title
      */
-    public void addMarker(String tag, LatLng coordinates, String title){
+    public boolean addMarker(String tag, LatLng coordinates, String title){
         List<String> tags = new ArrayList<>();
         tags.add(tag);
-        addMarker(tags ,coordinates,title, getMarkerOptionsStrategy());
+        return addMarker(tags ,coordinates,title, getMarkerOptionsStrategy());
     }
 
     /**
@@ -442,11 +441,12 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * @param coordinates marker location
      * @param title marker title
      * @param markerOptionsStrategy strategy for marker appearance
+     * @return true if marker has been successfully added, false otherwise
      */
-    public void addMarker(String tag, LatLng coordinates, String title,  MarkerOptionsStrategy markerOptionsStrategy){
+    public boolean addMarker(String tag, LatLng coordinates, String title,  MarkerOptionsStrategy markerOptionsStrategy){
         List<String> tags = new ArrayList<>();
         tags.add(tag);
-        addMarker(tags ,coordinates,title, markerOptionsStrategy);
+        return addMarker(tags ,coordinates,title, markerOptionsStrategy);
     }
 
     /**
@@ -457,12 +457,13 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
      * @param coordinates marker location
      * @param title marker title
      * @param markerOptionsStrategy strategy for marker appearance
+     * @return true if marker has been successfully added, false otherwise
      */
-    public void addMarker(List<String> tags, LatLng coordinates, String title, MarkerOptionsStrategy markerOptionsStrategy){
+    public boolean addMarker(List<String> tags, LatLng coordinates, String title, MarkerOptionsStrategy markerOptionsStrategy){
         com.ubudu.gmaps.model.Marker marker = new com.ubudu.gmaps.model.Marker(title,coordinates);
         marker.setMarkerOptionsStrategy(markerOptionsStrategy);
         marker.setTags(tags);
-        addMarker(marker);
+        return addMarker(marker);
     }
 
     /**
@@ -735,15 +736,11 @@ public class MapLayout extends RelativeLayout implements GoogleMap.OnPolygonClic
                 marker.setPosition(getNewPosition(t));
                 if (t < 1.0)
                     handler.postDelayed(this, 16);
-                else
-                    marker.setVisible(true);
             }
 
             private LatLng getNewPosition(float t) {
-                double lng = t * toLocation.longitude + (1 - t)
-                        * startLatLng.longitude;
-                double lat = t * toLocation.latitude + (1 - t)
-                        * startLatLng.latitude;
+                double lat = (toLocation.latitude - startLatLng.latitude) * t + startLatLng.latitude;
+                double lng = (toLocation.longitude - startLatLng.longitude) * t + startLatLng.longitude;
                 return new LatLng(lat, lng);
             }
         });

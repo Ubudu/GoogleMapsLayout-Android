@@ -11,6 +11,24 @@ Android library module that provides Google Map layout component with an API des
 
 ## How to use
 
+### Installing
+
+Add Ubudu nexus repository url to your `build.gradle` file:
+
+	repositories {
+		maven { url 'http://nexus.ubudu.com:8081/nexus/content/groups/public/' }
+		// ...
+	}
+    
+Then add the following dependency:
+
+    dependencies {
+        compile('com.ubudu.gmaps:maplayout:1.0.0@aar')
+        // ...
+    }
+
+### Integration
+
 **Important!** MapLayout uses the Google Maps Android API. It is mandatory to register the app project on the Google API Console and get a Google API key which can be then added to the app. More information of how to achieve this can be found [here](https://developers.google.com/maps/documentation/android-api/signup).
 
 Google Maps API key must be specified in the mobile app's manifest as a `meta-data`:
