@@ -6,6 +6,7 @@ Android library module that provides Google Map layout component with an API des
 - custom marker placing with tags for clean maintanance + style (color or bitmap, size)
 - zones highlighing + style(fill color, stroke color)
 - camera control (zoom, rotation, animate/not animate)
+- paths drawing
 
 <p align="center"><img src="screenshot.png" width="300px"></p>
 
@@ -23,7 +24,7 @@ Add Ubudu nexus repository url to your `build.gradle` file:
 Then add the following dependency:
 
     dependencies {
-        compile('com.ubudu.gmaps:maplayout:1.0.0@aar')
+        compile('com.ubudu.gmaps:maplayout:1.2.1@aar')
         // ...
     }
 
@@ -103,3 +104,5 @@ Sample API calls:
 
         // update the camera
         mMapLayout.updateCamera(true);
+        
+More use examples can be found in the sample app's `MapFragment` class source.
