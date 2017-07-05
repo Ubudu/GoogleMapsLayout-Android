@@ -50,10 +50,8 @@ public class MarkerBitmapFactory {
         Canvas canvas = new Canvas(bitmap);
         paint.setColor(haloColor);
         canvas.drawCircle((int)(bitmapSize/2),(int)(bitmapSize/2),haloRadius,paint);
-        paint.setColor(Color.parseColor("#80ffffff"));
-        canvas.drawCircle((int)(bitmapSize/2),(int)(bitmapSize/2),radius,paint);
         paint.setColor(color);
-        canvas.drawCircle((int)(bitmapSize/2),(int)(bitmapSize/2),(int)(0.8*radius),paint);
+        canvas.drawCircle((int)(bitmapSize/2),(int)(bitmapSize/2),(int)(radius),paint);
         return bitmap;
     }
 }

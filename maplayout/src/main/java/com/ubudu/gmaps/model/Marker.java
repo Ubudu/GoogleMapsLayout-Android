@@ -80,4 +80,21 @@ public class Marker {
         else
             return markerOptionsStrategy.getNormalMarkerOptions();
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Marker other = (Marker) obj;
+
+        if(this.getTitle().equals(other.getTitle())
+                && this.location.equals(other.location)) {
+            return true;
+        } else
+            return false;
+    }
 }
